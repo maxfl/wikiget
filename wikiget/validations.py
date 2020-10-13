@@ -34,6 +34,18 @@ def valid_file(search_string):
     file_regex = re.compile(r'(File:|Image:)([^/\r\n\t\f\v]+\.\w+)$', re.I)
     return file_regex.search(search_string)
 
+def valid_page(search_string):
+    """
+    Determines if the given string contains a valid page name, defined as a
+    string starting with a '/wiki/' and at least one character.
+    :param search_string: string to validate
+    :returns: a regex Match object if there's a match or None otherwise
+    """
+    # second group could also restrict to file extensions with three or more
+    # letters with ([^/\r\n\t\f\v]+\.\w{3,})
+    page_regex = re.compile(r'(/(?:media)*wiki/)([^\r\n\t\f\v]+)$', re.I)
+    return page_regex.search(search_string)
+
 
 def valid_site(search_string):
     """
