@@ -21,7 +21,7 @@ import sys
 
 from . import DEFAULT_SITE, DEFAULT_PATH, wikiget_version
 from .dl import download
-
+from .extract import extract
 
 def main():
     """
@@ -78,6 +78,9 @@ def main():
                                 help='treat FILE as a textfile containing '
                                 'multiple files to download, one URL or '
                                 'filename per line', action='store_true')
+    output_options.add_argument('-e', '--extract',
+                                help='treat file as a wiki page to download all the images from',
+                                action='store_true')
 
     args = parser.parse_args()
 
@@ -104,6 +107,8 @@ def main():
                 for _, line in enumerate(fd):
                     line = line.strip()
                     download(line, args)
+    elif args.extract:
+        extract(args)
     else:
         # single download mode
         dl = args.FILE
