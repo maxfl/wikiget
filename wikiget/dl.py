@@ -24,10 +24,12 @@ from requests import ConnectionError, HTTPError
 from tqdm import tqdm
 
 from . import CHUNKSIZE, DEFAULT_SITE, USER_AGENT
-from .validations import valid_file, verify_hash
+from .validations import valid_file, valid_page, verify_hash
 
+def parse_url(dl, args, filetype='file'):
+    """Parse URL
+    returns: site_name, filename"""
 
-def download(dl, args):
     url = urlparse(dl)
 
     if url.netloc:
@@ -41,7 +43,12 @@ def download(dl, args):
         filename = dl
         site_name = args.site
 
-    file_match = valid_file(filename)
+    if filetype=='file':
+        validate = valid_file
+    else:
+        validate = valid_page
+
+    file_match = validate(filename)
 
     # check if this is a valid file
     if file_match and file_match.group(1):
@@ -49,13 +56,15 @@ def download(dl, args):
         filename = file_match.group(2)
     else:
         # no file extension and/or prefix, probably an article
-        print("Could not parse input '{}' as a file. ".format(filename))
+        print("Could not parse input '{}' as a {}. ".format(filename, filetype))
         sys.exit(1)
 
     filename = unquote(filename)  # remove URL encoding for special characters
 
-    dest = args.output or filename
+    return site_name, filename
 
+def get_site(site_name, args):
+    """Get the Site object"""
     if args.verbose >= 2:
         print('User agent: {}'.format(USER_AGENT))
 
@@ -88,6 +97,15 @@ def download(dl, args):
         # LoginError: missing or invalid credentials
         print(e)
         sys.exit(1)
+
+    return site
+
+def download(dl, args):
+    site_name, filename = parse_url(dl, args)
+    site = get_site(site_name, args)
+
+    dest = args.output or filename
+
 
     # get info about the target file
     try:
